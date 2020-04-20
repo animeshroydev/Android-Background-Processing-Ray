@@ -43,11 +43,11 @@ class PhotosRepository : Repository {
 
   override fun getPhotos(): LiveData<List<String>> {
 
-      fetchJsonData()
+      fetchPhotos()
       return photosLiveData
   }
 
-    private fun fetchJsonData() {
+    private fun fetchPhotos() {
 
         val runnable = Runnable {
             val photosString = PhotosUtils.photoJsonString()
@@ -64,6 +64,24 @@ class PhotosRepository : Repository {
     }
 
     override fun getBanner(): LiveData<String> {
+        fetchBanners()
     return bannerLiveData
   }
+
+
+    private fun fetchBanners() {
+
+        val runnable = Runnable {
+            val bannerString = PhotosUtils.photoJsonString()
+            Log.i("PhotosRepository", bannerString)
+            val photos = PhotosUtils.bannerFromJsonString(bannerString ?: "")
+
+            if (photos != null) {
+                bannerLiveData.postValue(photos)
+            }
+
+        }
+        val thread = Thread(runnable)
+        thread.start()
+    }
 }
