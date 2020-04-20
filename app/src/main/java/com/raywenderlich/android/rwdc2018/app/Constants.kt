@@ -33,7 +33,9 @@ package com.raywenderlich.android.rwdc2018.app
 
 
 object Constants {
-  const val PHOTOS_URL = "https://api.myjson.com/bins/seroe"
+  // created a rest api for my server
+  // https://my-json-server.typicode.com/
+  const val PHOTOS_URL = "https://my-json-server.typicode.com/animeshroydev/FakeRestAPI/users"
   const val SONG_URL = "https://koenig-media.raywenderlich.com/uploads/2018/05/song.mp3"
   const val SONGS_DIRECTORY = "songs"
   const val SONG_FILENAME = "song.mp3"

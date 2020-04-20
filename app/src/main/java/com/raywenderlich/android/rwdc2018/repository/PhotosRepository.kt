@@ -50,8 +50,7 @@ class PhotosRepository : Repository {
     private fun fetchJsonData() {
         val runnable = Runnable {
             val photosString = PhotosUtils.photoJsonString()
-            Log.d("PhotosRepository", "photosString")
-            Log.d("PhotosRepository", photosString)
+            Log.i("PhotosRepository", photosString)
 
         }
         val thread = Thread(runnable)
