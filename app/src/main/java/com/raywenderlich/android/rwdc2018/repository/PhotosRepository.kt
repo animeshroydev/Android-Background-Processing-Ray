@@ -33,6 +33,10 @@ package com.raywenderlich.android.rwdc2018.repository
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.util.Log
 import com.raywenderlich.android.rwdc2018.app.PhotosUtils
 
@@ -48,9 +52,28 @@ class PhotosRepository : Repository {
   }
 
     private fun fetchJsonData() {
+
+        // Send data from bg thread using Handler to main (not using livedata)
+        val handler = object : Handler(Looper.getMainLooper()) {
+            override fun handleMessage(msg: Message?) {
+                val bundle = msg?.data
+                val photos = bundle?.getStringArrayList("PHOTOS_KEY")
+                // this will run on the main thread and will not cause exception
+                photosLiveData.value = photos
+            }
+        }
         val runnable = Runnable {
             val photosString = PhotosUtils.photoJsonString()
             Log.i("PhotosRepository", photosString)
+            val photos = PhotosUtils.photoUrlsFromJsonString(photosString ?: "")
+
+            if (photos != null) {
+                val message = Message()
+                val bundle = Bundle()
+                bundle.putStringArrayList("PHOTOS_KEY", photos)
+                message.data = bundle
+                handler.sendMessage(message)
+            }
 
         }
         val thread = Thread(runnable)
