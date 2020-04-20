@@ -33,6 +33,8 @@ package com.raywenderlich.android.rwdc2018.repository
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import android.util.Log
+import com.raywenderlich.android.rwdc2018.app.PhotosUtils
 
 
 class PhotosRepository : Repository {
@@ -40,6 +42,8 @@ class PhotosRepository : Repository {
   private val bannerLiveData = MutableLiveData<String>()
 
   override fun getPhotos(): LiveData<List<String>> {
+    val photosString = PhotosUtils.photoJsonString()
+    Log.i("PhotosRepository", photosString)
     return photosLiveData
   }
 
