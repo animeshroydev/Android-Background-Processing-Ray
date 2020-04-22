@@ -41,6 +41,7 @@ import android.os.AsyncTask
 import android.util.Log
 import com.raywenderlich.android.rwdc2018.app.PhotosUtils
 import com.raywenderlich.android.rwdc2018.app.RWDC2018Application
+import com.raywenderlich.android.rwdc2018.service.LogJobService
 import com.raywenderlich.android.rwdc2018.service.PhotosJobService
 
 
@@ -50,6 +51,7 @@ class PhotosRepository : Repository {
 
     init {
         scheduleFetchJob()
+        scheduleLogJob()
     }
 
   override fun getPhotos(): LiveData<List<String>> {
@@ -95,6 +97,16 @@ class PhotosRepository : Repository {
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .build()
 
+        jobScheduler.schedule(jobInfo)
+    }
+
+    private fun scheduleLogJob() {
+        val jobScheduler = RWDC2018Application.getAppContext()
+                .getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val jobInfo = JobInfo.Builder(1001,
+        ComponentName(RWDC2018Application.getAppContext(), LogJobService::class.java))
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .build()
         jobScheduler.schedule(jobInfo)
     }
 
