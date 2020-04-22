@@ -35,23 +35,22 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import android.content.ComponentName
-import android.content.Context
 import android.os.AsyncTask
-import android.util.Log
+import androidx.work.*
 import com.raywenderlich.android.rwdc2018.app.PhotosUtils
-import com.raywenderlich.android.rwdc2018.app.RWDC2018Application
-import com.raywenderlich.android.rwdc2018.service.LogJobService
-import com.raywenderlich.android.rwdc2018.service.PhotosJobService
+import com.raywenderlich.android.rwdc2018.service.DownloadWorker
+import java.util.concurrent.TimeUnit
 
 
 class PhotosRepository : Repository {
   private val photosLiveData = MutableLiveData<List<String>>()
   private val bannerLiveData = MutableLiveData<String>()
 
+    companion object {
+        const val DOWNLOAD_WORK_TAG = "DOWNLOAD_WORK_TAG"
+    }
     init {
-        scheduleFetchJob()
-        scheduleLogJob()
+        schedulePeriodicWorkRequest()
     }
 
   override fun getPhotos(): LiveData<List<String>> {
@@ -87,28 +86,23 @@ class PhotosRepository : Repository {
     return bannerLiveData
   }
 
-    private fun scheduleFetchJob() {
-        val jobScheduler = RWDC2018Application.getAppContext()
-                .getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+    // Using Work Manager
+  private fun schedulePeriodicWorkRequest() {
+      val constraints = Constraints.Builder()
+              .setRequiredNetworkType(NetworkType.CONNECTED)
+              .setRequiresStorageNotLow(true)
+              .build()
 
-        val jobInfo = JobInfo.Builder(1000,
-            ComponentName(RWDC2018Application.getAppContext(), PhotosJobService::class.java))
-                .setPeriodic(900000) // 15 min
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build()
+      val workManager = WorkManager.getInstance()
 
-        jobScheduler.schedule(jobInfo)
-    }
-
-    private fun scheduleLogJob() {
-        val jobScheduler = RWDC2018Application.getAppContext()
-                .getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        val jobInfo = JobInfo.Builder(1001,
-        ComponentName(RWDC2018Application.getAppContext(), LogJobService::class.java))
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .build()
-        jobScheduler.schedule(jobInfo)
-    }
+      val request: WorkRequest = PeriodicWorkRequestBuilder<DownloadWorker>(15,
+              TimeUnit.MINUTES)
+              .setConstraints(constraints)
+              .addTag(DOWNLOAD_WORK_TAG)
+              .build()
+      workManager.cancelAllWorkByTag(DOWNLOAD_WORK_TAG)
+      workManager.enqueue(request)
+  }
 
 
     private class FetchBannerAsyncTask(val callback: (String) -> Unit):
