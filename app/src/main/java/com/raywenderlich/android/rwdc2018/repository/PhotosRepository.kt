@@ -35,10 +35,17 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.AsyncTask
+import android.support.v4.content.LocalBroadcastManager
 import androidx.work.*
 import com.raywenderlich.android.rwdc2018.app.PhotosUtils
+import com.raywenderlich.android.rwdc2018.app.RWDC2018Application
 import com.raywenderlich.android.rwdc2018.service.DownloadWorker
+import com.raywenderlich.android.rwdc2018.service.FetchIntentService
 import java.util.concurrent.TimeUnit
 
 
@@ -46,12 +53,35 @@ class PhotosRepository : Repository {
   private val photosLiveData = MutableLiveData<List<String>>()
   private val bannerLiveData = MutableLiveData<String>()
 
+  private val receiver = object : BroadcastReceiver() {
+      override fun onReceive(context: Context?, intent: Intent?) {
+          FetchBannerAsyncTask {banner ->
+              bannerLiveData.value = banner
+          }.execute()
+
+          FetchPhotosAsyncTask { photos ->
+              photosLiveData.value = photos
+          }.execute()
+      }
+  }
+    init {
+        // schedulePeriodicWorkRequest()
+    }
+
+    override fun register() {
+        LocalBroadcastManager.getInstance(RWDC2018Application.getAppContext())
+                .registerReceiver(receiver, IntentFilter(FetchIntentService.FETCH_COMPLETE))
+    }
+
+    override fun unregister() {
+        LocalBroadcastManager.getInstance(RWDC2018Application.getAppContext())
+                .unregisterReceiver(receiver)
+    }
+
     companion object {
         const val DOWNLOAD_WORK_TAG = "DOWNLOAD_WORK_TAG"
     }
-    init {
-        schedulePeriodicWorkRequest()
-    }
+
 
   override fun getPhotos(): LiveData<List<String>> {
 
@@ -86,24 +116,28 @@ class PhotosRepository : Repository {
     return bannerLiveData
   }
 
-    // Using Work Manager
-  private fun schedulePeriodicWorkRequest() {
-      val constraints = Constraints.Builder()
-              .setRequiredNetworkType(NetworkType.CONNECTED)
-              .setRequiresStorageNotLow(true)
-              .build()
+//    // Using Work Manager
+//  private fun schedulePeriodicWorkRequest() {
+//      val constraints = Constraints.Builder()
+//              .setRequiredNetworkType(NetworkType.CONNECTED)
+//              .setRequiresStorageNotLow(true)
+//              .build()
+//
+//      val workManager = WorkManager.getInstance()
+//
+//      val request: WorkRequest = PeriodicWorkRequestBuilder<DownloadWorker>(15,
+//              TimeUnit.MINUTES)
+//              .setConstraints(constraints)
+//              .addTag(DOWNLOAD_WORK_TAG)
+//              .build()
+//      workManager.cancelAllWorkByTag(DOWNLOAD_WORK_TAG)
+//      workManager.enqueue(request)
+//  }
 
-      val workManager = WorkManager.getInstance()
 
-      val request: WorkRequest = PeriodicWorkRequestBuilder<DownloadWorker>(15,
-              TimeUnit.MINUTES)
-              .setConstraints(constraints)
-              .addTag(DOWNLOAD_WORK_TAG)
-              .build()
-      workManager.cancelAllWorkByTag(DOWNLOAD_WORK_TAG)
-      workManager.enqueue(request)
-  }
-
+    // create an IntentService to download the photos JSON file in PhotosRepository
+    // and use a BroadcastReceiver to listen for completion of the download.
+    // Then update the live data
 
     private class FetchBannerAsyncTask(val callback: (String) -> Unit):
             AsyncTask<Void, Void, String>(){
