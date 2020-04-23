@@ -31,8 +31,14 @@
 
 package com.raywenderlich.android.rwdc2018.ui.song
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.content.LocalBroadcastManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -50,6 +56,16 @@ class SongFragment : Fragment() {
       return SongFragment()
     }
   }
+  // Receiver of Broadcast
+  private val receiver = object : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+      val param = intent?.getStringExtra(DownloadIntentService.DOWNLOAD_COMPLETE_KEY)
+      Log.i("SongFragment", "Received broadcast for $param")
+      if (SongUtils.songFile().exists()) {
+        playButton.isEnabled = true
+      }
+    }
+  }
 
   override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
     return inflater.inflate(R.layout.fragment_song, container, false)
@@ -63,6 +79,19 @@ class SongFragment : Fragment() {
       stopButton.isEnabled = false
     }
   }
+
+  override fun onStart() {
+    super.onStart()
+    LocalBroadcastManager.getInstance(RWDC2018Application.getAppContext())
+            .registerReceiver(receiver, IntentFilter(DownloadIntentService.DOWNLOAD_COMPLETE))
+  }
+
+  override fun onStop() {
+    super.onStop()
+    LocalBroadcastManager.getInstance(RWDC2018Application.getAppContext())
+            .unregisterReceiver(receiver)
+  }
+
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
