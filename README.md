@@ -1,6 +1,12 @@
 # Android-Background-Processing-Ray
-Master branch (Starter Project) - Android Background Processing
+**Master branch** (Starter Project) - Android Background Processing
 
-ThreadsAndAsyncTask branch - Showed how to run tasks on background using Thread and Runnable. Also how to do the same using AsyncTask.
+## PhotosFragment
+**ThreadsAndAsyncTask branch** - Showed how to run tasks on background using Thread and Runnable. Also how to do the same using AsyncTask.
 
-JobSchedulerAndWorkManager Branch - In package services -> PhotosJobService showed how to use JobScheduler to download the JSON and DownloadWorker class showd how to use New JetPack component that is WorkManager to do the same stuff.  
+**JobSchedulerAndWorkManager** branch - In package services -> PhotosJobService showed how to use JobScheduler to download the JSON and DownloadWorker class showd how to use New JetPack component that is WorkManager to do the same stuff.  
+
+## SongFragment
+**AndroidServicesAndBroadcastReceiver** branch - Android service class is a high level android component that perform long running apction that don't require a user interface. Also worked with specific type of service name **IntentService**(perform single long running task on background thread).
+
+This branch also uses broadcast receiver to alert other app component like an activity of event that occures in the service. Also gonna use a **Foreground Service** to play music while app is in the background and keeps a notification in the foreground so that the user aware that running service. 
