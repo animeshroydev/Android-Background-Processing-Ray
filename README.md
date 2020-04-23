@@ -20,3 +20,5 @@ In this branch I also used IntentService to download the photos JSON file in Pho
 4. WorkManager (new Jetpack component)
 5. Intent Service
 6. Foreground Service, Show Notification
+
+https://youtu.be/hLReKHxkNaA
